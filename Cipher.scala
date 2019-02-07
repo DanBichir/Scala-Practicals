@@ -35,55 +35,66 @@ object Cipher{
   /* Try to decrypt ciphertext, using crib as a crib */
   def tryCrib(crib: Array[Char], ciphertext: Array[Char]) = {
 	var start = 0 				/* Represents the position from which we seek the keyword */
+	var i = 0	
 	var j = 0
+	var a = 0
 	var foundKey = 0			/* Counter for checking if we found the key*/
 	var k = crib.size			/* Size of the memorised keyword*/
 	var keyChars = new Array[Char](k)	/* Array where we store decrypted parts of the whole text */
-	while(foundKey==0){
+	while(foundKey==0 && start<ciphertext.size-k){
 		/* Step 1 : Creating a sequence that may contain our key */
 		j=start
-		while(j < k+start){
-			keyChars(j%k) = xor(ciphertext(j),crib(j%k))
+		
+		while(j < k+start && j < ciphertext.size-k){
+			i=j-start
+			keyChars(i) = xor(ciphertext(j),crib(i))
 			j+=1
-		}/*Generates key from decrypting coded text with crib(remembered word) */
+		}/*Generates sequence possibly containing initial key from decrypting coded text with crib(memorised word)*/	
 
 		/* Step 2 : Finding if there is a key */
 		j=1
 		while(foundKey == 0 && j < k){
+			/* Searches smallest j such that keyChars[0...j) is the key */
 			if(keyChars(0)==keyChars(j)) foundKey = findKey(keyChars,j)
 			j+=1
 			/* The loop stops when:
 			1) we found a key and j stores the size of the key or
-			2) there is no repetition and no key*/
+			2) there is no repetition and no key, so we have to find another start position*/
 		}
-		start+=1 
-	}
-	var key = new Array[Char](j-1)
-
-	/* Step 3 : Printing */
-	start=0
-	do{	
-		key(start) = keyChars(start)
+		
 		start+=1
-	}while(start<j)
-	println(Array[Char] key)
+	}
+	j-=1
+	var key = new Array[Char](j)
+	
+	/* Step 3 : Printing */
+	var dif = (start-1) % j /*difference in position of the elements of the key from their original order*/
+	key(0)=keyChars(j-dif)
+	i=1
+	do{	
+		key(i) = keyChars(i+j-dif) /* Copy the key from j to the end of the keyword */
+		i+=1
+	}while(i<dif)
+	do{
+		key(i) = keyChars(i-dif) /* Copy the key from the beginning*/
+		i+=1
+	}while(i<j)
+	println(new String (key))
 	print(new String (encrypt(key,ciphertext)))
   }
 
 
   /* Checks if we found the start of the repetition (key) */
-  def findKey(keyChars: Array[Char],j: Int) : Int = {
-	var start = 1
+  def findKey(keyChars:  Array[Char],j: Int) : Int = {
+	var i = 1
 	var k = keyChars.size
-	j+=1
-	while(keyChars(start) == keyChars(j) && start<k){
-		j+=1
-		start+=1
-		/* Compares all the characters of the word */
+	var counter = 1
+	while(i+j<k){
+		if(keyChars(i)!=keyChars(i+j))		counter = 0
+		i+=1
 	}
-	if(j==k) return 1
-	else return 0
-  }
+	return counter
+  }	
 
 
   /** The first optional statistical test, to guess the length of the key */
