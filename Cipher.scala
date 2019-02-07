@@ -34,28 +34,29 @@ object Cipher{
 
   /* Try to decrypt ciphertext, using crib as a crib */
   def tryCrib(crib: Array[Char], ciphertext: Array[Char]) = {
-	var start = 0
+	var start = 0 				/* Represents the position from which we seek the keyword */
 	var j = 0
-	var foundKey = 0
-	var k = crib.size
-	var keyChars = new Array[Char](k)
+	var foundKey = 0			/* Counter for checking if we found the key*/
+	var k = crib.size			/* Size of the memorised keyword*/
+	var keyChars = new Array[Char](k)	/* Array where we store decrypted parts of the whole text */
 	while(foundKey==0){
 		/* Step 1 : Creating a sequence that may contain our key */
 		j=start
 		while(j < k+start){
 			keyChars(j%k) = xor(ciphertext(j),crib(j%k))
 			j+=1
-		}
-		/*            Generates key from decrypting coded text with crib(remembered word) */
+		}/*Generates key from decrypting coded text with crib(remembered word) */
 
 		/* Step 2 : Finding if there is a key */
 		j=1
 		while(foundKey == 0 && j < k){
 			if(keyChars(0)==keyChars(j)) foundKey = findKey(keyChars,j)
 			j+=1
-			/* The loop stops when we found a key and j stores the size of the key*/
+			/* The loop stops when:
+			1) we found a key and j stores the size of the key or
+			2) there is no repetition and no key*/
 		}
-		start+=1 /* Represents the position from which we seek the keyword */
+		start+=1 
 	}
 	var key = new Array[Char](j-1)
 
@@ -70,12 +71,12 @@ object Cipher{
   }
 
 
-  /* Checks if we found the start of the repetition */
+  /* Checks if we found the start of the repetition (key) */
   def findKey(keyChars: Array[Char],j: Int) : Int = {
 	var start = 1
 	var k = keyChars.size
 	j+=1
-	while(keyChars(start) == keyChars(j) && j<k){
+	while(keyChars(start) == keyChars(j) && start<k){
 		j+=1
 		start+=1
 		/* Compares all the characters of the word */
