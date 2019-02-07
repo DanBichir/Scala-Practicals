@@ -41,19 +41,24 @@ object Cipher{
 	var keyChars = new Array[Char](k)
 	while(foundKey==0){
 		/* Step 1 : Creating a sequence that may contain our key */
-		j=start+1
-		while(j < k+start-1) keyChars(j%k) = xor(ciphertext(j),crib(j%k))
+		j=start
+		while(j < k+start){
+			keyChars(j%k) = xor(ciphertext(j),crib(j%k))
+			j+=1
+		}
+		/*            Generates key from decrypting coded text with crib(remembered word) */
 
 		/* Step 2 : Finding if there is a key */
 		j=1
-		while(foundKey == 0){
+		while(foundKey == 0 && j < k){
 			if(keyChars(0)==keyChars(j)) foundKey = findKey(keyChars,j)
 			j+=1
+			/* The loop stops when we found a key and j stores the size of the key*/
 		}
-		start+=1
+		start+=1 /* Represents the position from which we seek the keyword */
 	}
 	var key = new Array[Char](j-1)
-	/* The loop stops when we found a key */
+
 	/* Step 3 : Printing */
 	start=0
 	do{	
@@ -73,6 +78,7 @@ object Cipher{
 	while(keyChars(start) == keyChars(j) && j<k){
 		j+=1
 		start+=1
+		/* Compares all the characters of the word */
 	}
 	if(j==k) return 1
 	else return 0
